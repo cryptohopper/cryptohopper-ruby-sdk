@@ -1,0 +1,55 @@
+name: Release
+on:
+  push:
+    tags: ["rb-v*"]
+
+# RubyGems Trusted Publishing uses OIDC — no API key stored in repo secrets.
+# Register the publisher at https://rubygems.org/profile/oidc/api_key_roles
+# (or the pending-publisher page for a brand-new gem) BEFORE the first
+# `rb-v*` tag is pushed.
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: rubygems
+      url: https://rubygems.org/gems/cryptohopper
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: RSpec
+        run: bundle exec rspec
+
+      - name: RuboCop
+        run: bundle exec rubocop --fail-level W
+
+      - name: Verify gem version matches tag
+        run: |
+          TAG="${GITHUB_REF_NAME#rb-v}"
+          GEM=$(ruby -e 'require "./lib/cryptohopper/version"; print Cryptohopper::VERSION')
+          if [ "$TAG" != "$GEM" ]; then
+            echo "Tag $GITHUB_REF_NAME (→ $TAG) does not match Cryptohopper::VERSION $GEM"
+            exit 1
+          fi
+
+      - name: Build gem
+        run: gem build cryptohopper.gemspec
+
+      - name: Publish via RubyGems Trusted Publishing
+        uses: rubygems/release-gem@v1
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.gem"
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') || contains(github.ref_name, 'pre') }}

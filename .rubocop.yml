@@ -1,0 +1,56 @@
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/ClassLength:
+  Max: 400
+
+Metrics/ModuleLength:
+  Max: 400
+
+Metrics/MethodLength:
+  Max: 40
+
+Metrics/AbcSize:
+  Max: 40
+
+Metrics/CyclomaticComplexity:
+  Max: 15
+
+Metrics/PerceivedComplexity:
+  Max: 15
+
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*
+    - cryptohopper.gemspec
+
+Naming/AccessorMethodName:
+  Enabled: false
+
+Naming/MethodParameterName:
+  AllowedNames:
+    - id
+    - to
+    - of
+    - q
+
+Lint/UnderscorePrefixedVariableName:
+  Exclude:
+    - lib/cryptohopper/client.rb
+
+# `_request` is an internal entry point called by the resource classes.
+# Prefixing with an underscore signals "not public API" without breaking callers.
+Naming/MethodName:
+  AllowedPatterns:
+    - "^_request$"
+
+Layout/LineLength:
+  Max: 110
