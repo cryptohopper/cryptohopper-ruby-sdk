@@ -41,11 +41,16 @@ jobs:
             exit 1
           fi
 
+      - name: Configure RubyGems credentials (OIDC)
+        uses: rubygems/configure-rubygems-credentials@v1.0.0
+        with:
+          audience: rubygems.org
+
       - name: Build gem
         run: gem build cryptohopper.gemspec
 
-      - name: Publish via RubyGems Trusted Publishing
-        uses: rubygems/release-gem@v1
+      - name: Push gem to RubyGems
+        run: gem push cryptohopper-*.gem
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
