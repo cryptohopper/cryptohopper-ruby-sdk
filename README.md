@@ -1,6 +1,9 @@
 # cryptohopper
 
-[![Gem Version](https://badge.fury.io/rb/cryptohopper.svg)](https://rubygems.org/gems/cryptohopper)
+[![Gem Version](https://img.shields.io/gem/v/cryptohopper?include_prereleases&logo=rubygems&logoColor=white)](https://rubygems.org/gems/cryptohopper)
+[![Gem downloads](https://img.shields.io/gem/dt/cryptohopper?logo=rubygems&logoColor=white&label=downloads)](https://rubygems.org/gems/cryptohopper)
+[![CI](https://github.com/cryptohopper/cryptohopper-ruby-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/cryptohopper/cryptohopper-ruby-sdk/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/cryptohopper/cryptohopper-ruby-sdk?color=blue)](LICENSE)
 
 Official Ruby SDK for the [Cryptohopper](https://www.cryptohopper.com) API.
 
