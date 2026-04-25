@@ -9,6 +9,8 @@ Official Ruby SDK for the [Cryptohopper](https://www.cryptohopper.com) API.
 
 > **Status: 0.1.0.pre.alpha.1** — full coverage of all 18 public API domains from day one. Matches the feature surface of `@cryptohopper/sdk`, `cryptohopper` (Python), and `cryptohopper-go-sdk` at v0.4.0.
 
+**Deeper docs:** [Getting Started](docs/Getting-Started.md) · [Authentication](docs/Authentication.md) · [Error Handling](docs/Error-Handling.md) · [Rate Limits](docs/Rate-Limits.md)
+
 ## Install
 
 ```bash
