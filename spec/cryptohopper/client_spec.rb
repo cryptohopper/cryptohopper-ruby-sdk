@@ -139,5 +139,41 @@ RSpec.describe Cryptohopper::Client do
         expect(err.status).to eq(0)
       end
     end
+
+    it "maps Net::ReadTimeout (idle) to TIMEOUT" do
+      stub_request(:get, "https://api.cryptohopper.com/v1/x")
+        .to_raise(Net::ReadTimeout.new)
+
+      expect { build_client.send(:_request, "GET", "/x") }.to raise_error do |err|
+        expect(err.code).to eq("TIMEOUT")
+        expect(err.status).to eq(0)
+      end
+    end
+
+    it "maps Timeout::Error (total deadline) to TIMEOUT" do
+      # Net::HTTP's read_timeout is per-read; a server that trickles bytes
+      # faster than the timeout would otherwise hang indefinitely. The
+      # transport wraps the request in Timeout.timeout to enforce a true
+      # total deadline. Simulate the Timeout::Error path directly.
+      stub_request(:get, "https://api.cryptohopper.com/v1/x")
+        .to_raise(Timeout::Error.new("execution expired"))
+
+      expect { build_client.send(:_request, "GET", "/x") }.to raise_error do |err|
+        expect(err.code).to eq("TIMEOUT")
+        expect(err.status).to eq(0)
+      end
+    end
+
+    it "skips x-api-app-key header when app_key is an empty string" do
+      stub_request(:get, "https://api.cryptohopper.com/v1/user/get")
+        .with do |req|
+          # WebMock's `with(headers:)` only checks presence; we want to
+          # assert ABSENCE, so do it via a custom matcher block.
+          !req.headers.key?("X-Api-App-Key")
+        end
+        .to_return(status: 200, body: '{"data":{}}')
+
+      build_client(app_key: "").send(:_request, "GET", "/user/get")
+    end
   end
 end

@@ -2,6 +2,7 @@
 
 require "json"
 require "net/http"
+require "timeout"
 require "uri"
 
 require_relative "errors"
@@ -135,7 +136,10 @@ module Cryptohopper
       req["Authorization"] = "Bearer #{@api_key}"
       req["Accept"] = "application/json"
       req["User-Agent"] = user_agent_header
-      req["x-api-app-key"] = @app_key if @app_key
+      # Ruby treats empty strings as truthy, so a literal `if @app_key`
+      # would set the header to an empty string when `app_key:` is "".
+      # Skip the header entirely unless we have a non-empty value.
+      req["x-api-app-key"] = @app_key if @app_key && !@app_key.empty?
 
       if body
         req["Content-Type"] = "application/json"
@@ -150,9 +154,16 @@ module Cryptohopper
       http.use_ssl = uri.scheme == "https"
       http.open_timeout = @timeout
       http.read_timeout = @timeout
+      http.write_timeout = @timeout if http.respond_to?(:write_timeout=)
 
-      http.request(req)
-    rescue Net::OpenTimeout, Net::ReadTimeout => e
+      # Net::HTTP's `read_timeout` is per-read — a server trickling response
+      # bytes faster than the timeout resets the clock with each chunk and
+      # the call hangs indefinitely. Wrap in `Timeout.timeout` so the
+      # configured `@timeout` becomes a true total deadline. Each call uses
+      # a one-shot connection (no `http.start`), so a Timeout interrupt
+      # can't leave a session in a bad state.
+      Timeout.timeout(@timeout) { http.request(req) }
+    rescue Net::OpenTimeout, Net::ReadTimeout, Net::WriteTimeout, Timeout::Error => e
       raise Error.new(code: "TIMEOUT", message: "Request timed out (#{e.message})",
                       status: 0)
     rescue StandardError => e
