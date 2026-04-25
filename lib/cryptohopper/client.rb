@@ -51,6 +51,8 @@ module Cryptohopper
     # @param timeout [Integer, Float] Per-request timeout in seconds.
     # @param max_retries [Integer] Retries on 429 (respecting Retry-After).
     # @param user_agent [String, nil] Appended after `cryptohopper-sdk-ruby/<v>`.
+    # rubocop:disable Metrics/ParameterLists -- keyword args; readability
+    # wins over splitting into a value-object struct.
     def initialize(api_key:, app_key: nil, base_url: nil, timeout: DEFAULT_TIMEOUT,
                    max_retries: DEFAULT_MAX_RETRIES, user_agent: nil)
       raise ArgumentError, "api_key is required" if api_key.nil? || api_key.empty?
@@ -81,6 +83,7 @@ module Cryptohopper
       @webhooks = Resources::Webhooks.new(self)
       @app = Resources::App.new(self)
     end
+    # rubocop:enable Metrics/ParameterLists
 
     # Internal transport. Resources call this. Users shouldn't.
     #
@@ -113,7 +116,7 @@ module Cryptohopper
       url = "#{@base_url}#{full_path}"
 
       if params && !params.empty?
-        clean = params.reject { |_, v| v.nil? }
+        clean = params.compact
         unless clean.empty?
           qs = URI.encode_www_form(clean.transform_keys(&:to_s))
           url += (url.include?("?") ? "&" : "?") + qs
@@ -163,7 +166,9 @@ module Cryptohopper
       # a one-shot connection (no `http.start`), so a Timeout interrupt
       # can't leave a session in a bad state.
       Timeout.timeout(@timeout) { http.request(req) }
-    rescue Net::OpenTimeout, Net::ReadTimeout, Net::WriteTimeout, Timeout::Error => e
+    rescue Timeout::Error => e
+      # Net::OpenTimeout / ReadTimeout / WriteTimeout all subclass
+      # Timeout::Error in modern Ruby — rescuing the parent catches all four.
       raise Error.new(code: "TIMEOUT", message: "Request timed out (#{e.message})",
                       status: 0)
     rescue StandardError => e
@@ -177,9 +182,7 @@ module Cryptohopper
       raw = response.body.to_s
       parsed = parse_json(raw)
 
-      if status >= 400
-        raise build_error(status, parsed, response)
-      end
+      raise build_error(status, parsed, response) if status >= 400
 
       return parsed["data"] if parsed.is_a?(Hash) && parsed.key?("data")
 
@@ -230,7 +233,7 @@ module Cryptohopper
       return nil if header.nil? || header.empty?
 
       seconds = Float(header, exception: false)
-      return nil if seconds && seconds.negative?
+      return nil if seconds&.negative?
       return (seconds * 1000).round if seconds
 
       # HTTP-date fallback.
