@@ -23,6 +23,8 @@ module Cryptohopper
 
     attr_reader :code, :status, :server_code, :ip_address, :retry_after_ms
 
+    # rubocop:disable Metrics/ParameterLists -- keyword args; readability
+    # wins over splitting into a value-object struct.
     def initialize(code:, message:, status:, server_code: nil, ip_address: nil,
                    retry_after_ms: nil)
       super(message)
@@ -32,13 +34,14 @@ module Cryptohopper
       @ip_address = ip_address
       @retry_after_ms = retry_after_ms
     end
+    # rubocop:enable Metrics/ParameterLists
 
     def inspect
       extras = []
       extras << "server_code=#{@server_code}" if @server_code
       extras << "ip=#{@ip_address}" if @ip_address
       extras << "retry_after_ms=#{@retry_after_ms}" if @retry_after_ms
-      extra = extras.empty? ? "" : " (#{extras.join(", ")})"
+      extra = extras.empty? ? '' : " (#{extras.join(', ')})"
       "#<Cryptohopper::Error code=#{@code} status=#{@status}#{extra}: #{message}>"
     end
   end
