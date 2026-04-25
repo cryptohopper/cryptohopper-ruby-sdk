@@ -41,7 +41,7 @@ module Cryptohopper
       extras << "server_code=#{@server_code}" if @server_code
       extras << "ip=#{@ip_address}" if @ip_address
       extras << "retry_after_ms=#{@retry_after_ms}" if @retry_after_ms
-      extra = extras.empty? ? '' : " (#{extras.join(', ')})"
+      extra = extras.empty? ? "" : " (#{extras.join(', ')})"
       "#<Cryptohopper::Error code=#{@code} status=#{@status}#{extra}: #{message}>"
     end
   end
