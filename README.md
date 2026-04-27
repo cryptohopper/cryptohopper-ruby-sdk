@@ -67,7 +67,7 @@ ch.hoppers.buy(hopper_id: 42, market: "BTC/USDT", amount: 0.001)
 ch.hoppers.config_update(42, strategy_id: 99)
 ch.hoppers.panic(42)
 
-# Exchange (public, no auth)
+# Exchange — market data (still requires a real token; the gateway has no anonymous routes)
 ch.exchange.ticker(exchange: "binance", market: "BTC/USDT")
 ch.exchange.candles(exchange: "binance", market: "BTC/USDT", timeframe: "1h")
 
