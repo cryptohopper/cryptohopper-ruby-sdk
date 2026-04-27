@@ -136,7 +136,10 @@ module Cryptohopper
               end
 
       req = klass.new(uri.request_uri)
-      req["Authorization"] = "Bearer #{@api_key}"
+      # Cryptohopper Public API v1 uses `access-token: <token>`, not the
+      # OAuth2-conventional `Authorization: Bearer <token>`. The gateway
+      # in front of the API rejects Bearer with a SigV4 parse error.
+      req["access-token"] = @api_key
       req["Accept"] = "application/json"
       req["User-Agent"] = user_agent_header
       # Ruby treats empty strings as truthy, so a literal `if @app_key`
