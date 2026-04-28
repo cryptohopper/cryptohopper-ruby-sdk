@@ -43,8 +43,10 @@ RSpec.describe Cryptohopper::Client do
       stub_request(:get, "https://api.cryptohopper.com/v1/user/get")
         .to_return(status: 200, body: '{"data":{}}')
       build_client.send(:_request, "GET", "/user/get")
-      expect(WebMock).to have_requested(:get, "https://api.cryptohopper.com/v1/user/get")
-        .with { |req| req.headers["Authorization"].nil? }
+      expect(WebMock).to(
+        have_requested(:get, "https://api.cryptohopper.com/v1/user/get")
+          .with { |req| req.headers["Authorization"].nil? }
+      )
     end
 
     it "sends x-api-app-key when app_key is provided" do
