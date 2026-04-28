@@ -23,11 +23,11 @@ RSpec.describe Cryptohopper::Client do
   end
 
   describe "transport" do
-    it "sends Authorization + User-Agent headers and unwraps {data}" do
+    it "sends access-token + User-Agent headers and unwraps {data}" do
       stub_request(:get, "https://api.cryptohopper.com/v1/user/get")
         .with(
           headers: {
-            "Authorization" => "Bearer ch_test",
+            "access-token" => "ch_test",
             "Accept" => "application/json",
             "User-Agent" => "cryptohopper-sdk-ruby/#{Cryptohopper::VERSION}"
           }
@@ -37,6 +37,16 @@ RSpec.describe Cryptohopper::Client do
 
       out = build_client.send(:_request, "GET", "/user/get")
       expect(out).to eq({ "hello" => "world" })
+    end
+
+    it "does not send an Authorization header" do
+      stub_request(:get, "https://api.cryptohopper.com/v1/user/get")
+        .to_return(status: 200, body: '{"data":{}}')
+      build_client.send(:_request, "GET", "/user/get")
+      expect(WebMock).to(
+        have_requested(:get, "https://api.cryptohopper.com/v1/user/get")
+          .with { |req| req.headers["Authorization"].nil? }
+      )
     end
 
     it "sends x-api-app-key when app_key is provided" do
